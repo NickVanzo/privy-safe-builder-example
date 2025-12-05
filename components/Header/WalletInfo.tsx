@@ -63,7 +63,8 @@ export default function WalletInfo({
               <span className="line-through">Polymarket Profile</span>
             </button>
             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-lg border border-white/20 z-10 text-center">
-              This Privy EOA does not have a corresponding Polymarket.com profile.
+              This Privy EOA does not have a corresponding Polymarket.com
+              profile.
             </div>
           </div>
           <button
