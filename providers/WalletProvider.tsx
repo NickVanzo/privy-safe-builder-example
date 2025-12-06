@@ -10,7 +10,7 @@ import {
 } from "viem";
 import { providers } from "ethers";
 import { addRpcUrlOverrideToChain } from "@privy-io/chains";
-import { PrivyProvider, useWallets } from "@privy-io/react-auth";
+import { PrivyProvider, useWallets, usePrivy } from "@privy-io/react-auth";
 import { POLYGON_RPC_URL } from "@/constants/polymarket";
 import { polygon } from "viem/chains";
 import { WalletContext } from "@/providers/WalletContext";
@@ -24,10 +24,14 @@ function WalletContextProvider({ children }: { children: ReactNode }) {
   const [walletClient, setWalletClient] = useState<WalletClient | null>(null);
   const [ethersSigner, setEthersSigner] =
     useState<providers.JsonRpcSigner | null>(null);
-  const { wallets, ready } = useWallets();
 
-  const wallet = wallets?.[0];
-  const eoaAddress = (wallet?.address as `0x${string}`) ?? undefined;
+  const { wallets, ready } = useWallets();
+  const { authenticated, user } = usePrivy();
+
+  const wallet = wallets.find(w => w.address === user?.wallet?.address);
+  const eoaAddress = authenticated && wallet 
+    ? (wallet.address as `0x${string}`) 
+    : undefined;
 
   useEffect(() => {
     async function init() {
@@ -60,6 +64,22 @@ function WalletContextProvider({ children }: { children: ReactNode }) {
     init();
   }, [wallet, ready, eoaAddress]);
 
+  useEffect(() => {
+    async function ensurePolygonChain() {
+      if (!wallet || !ready || !authenticated) return;
+      
+      try {
+        const chainId = wallet.chainId;
+        if (chainId !== `eip155:${polygon.id}`) {
+          await wallet.switchChain(polygon.id);
+        }
+      } catch (err) {
+        console.error("Failed to switch chain:", err);
+      }
+    }
+    ensurePolygonChain();
+  }, [wallet, ready, authenticated]);
+
   return (
     <WalletContext.Provider
       value={{
@@ -67,7 +87,8 @@ function WalletContextProvider({ children }: { children: ReactNode }) {
         walletClient,
         publicClient,
         ethersSigner,
-        isReady: ready && !!walletClient,
+        isReady: ready && authenticated && !!walletClient,
+        authenticated,
       }}
     >
       {children}

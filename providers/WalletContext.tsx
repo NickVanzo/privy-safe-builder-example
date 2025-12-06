@@ -10,6 +10,7 @@ export interface WalletContextType {
   publicClient: PublicClient | null;
   ethersSigner: providers.JsonRpcSigner | null;
   isReady: boolean;
+  authenticated: boolean;
 }
 
 export const WalletContext = createContext<WalletContextType>({
@@ -18,6 +19,7 @@ export const WalletContext = createContext<WalletContextType>({
   publicClient: null,
   ethersSigner: null,
   isReady: false,
+  authenticated: false,
 });
 
 export function useWallet() {
